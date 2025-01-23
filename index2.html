@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Deliverables Calculator</title>
+    <title>Design Deliverables Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,21 +40,14 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="nav">
-            <a href="/index2.html">Design Deliverables Calculator</a>
-        </div>
-    </header>
-    <h1>Content Deliverables Calculator (INR)</h1>
+    <h1>Design Deliverables Calculator (INR)</h1>
 
     <table id="calculatorTable">
         <thead>
             <tr>
                 <th>Deliverable Type</th>
                 <th>Units/Quantity</th>
-                <th>Words per Unit</th>
-                <th>Cost per Word (₹)</th>
-                <th>Total Words</th>
+                <th>Cost per Design (₹)</th>
                 <th>Total Cost (₹)</th>
             </tr>
         </thead>
@@ -65,8 +58,7 @@
             <tr>
                 <td class="text-right">Summary:</td>
                 <td class="text-right"><span id="totalUnits">0</span> Units</td>
-                <td colspan="2"></td>
-                <td class="text-right"><span id="totalWords">0</span></td>
+                <td></td>
                 <td class="text-right">₹<span id="totalCost">0.00</span></td>
             </tr>
         </tfoot>
@@ -74,30 +66,21 @@
 
     <script>
         const deliverables = [
-            { type: 'Articles', count: 5, wordsPerItem: 800, costPerWord: 7.50 },
-            { type: 'Blog Posts', count: 3, wordsPerItem: 500, costPerWord: 6.00 },
-            { type: 'Thought Leadership', count: 2, wordsPerItem: 1200, costPerWord: 9.00 },
-            { type: 'Educational Emails', count: 6, wordsPerItem: 300, costPerWord: 5.25 },
-            { type: 'Social Media Posts', count: 10, wordsPerItem: 100, costPerWord: 3.75 },
-            { type: 'Press Releases', count: 2, wordsPerItem: 600, costPerWord: 6.75 },
-            { type: 'Tip Sheets', count: 4, wordsPerItem: 1000, costPerWord: 7.50 },
-            { type: 'Industry Ebooks', count: 1, wordsPerItem: 5000, costPerWord: 11.25 }
+            { type: 'Infographics', count: 5, costPerDesign: 1500 },
+            { type: 'Social Media Posts', count: 10, costPerDesign: 500 },
+            { type: 'Tip Sheets', count: 3, costPerDesign: 2000 }
         ];
 
         function calculateTotals() {
             let totalUnits = 0;
-            let totalWords = 0;
             let totalCost = 0;
 
             deliverables.forEach(item => {
                 totalUnits += Number(item.count);
-                const itemWords = item.count * item.wordsPerItem;
-                totalWords += itemWords;
-                totalCost += itemWords * item.costPerWord;
+                totalCost += item.count * item.costPerDesign;
             });
 
             document.getElementById('totalUnits').textContent = totalUnits.toLocaleString();
-            document.getElementById('totalWords').textContent = totalWords.toLocaleString();
             document.getElementById('totalCost').textContent = totalCost.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -112,13 +95,11 @@
 
         function updateRow(index) {
             const item = deliverables[index];
-            const totalWords = item.count * item.wordsPerItem;
-            const totalCost = totalWords * item.costPerWord;
+            const totalCost = item.count * item.costPerDesign;
 
             const row = document.getElementById(`row-${index}`);
             const cells = row.getElementsByTagName('td');
-            cells[4].textContent = totalWords.toLocaleString();
-            cells[5].textContent = '₹' + totalCost.toLocaleString(undefined, {
+            cells[3].textContent = '₹' + totalCost.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
@@ -134,12 +115,9 @@
                     <td>${item.type}</td>
                     <td><input type="number" value="${item.count}"
                         onchange="updateDeliverable(${index}, 'count', this.value)"></td>
-                    <td><input type="number" value="${item.wordsPerItem}"
-                        onchange="updateDeliverable(${index}, 'wordsPerItem', this.value)"></td>
-                    <td><input type="number" step="0.25" value="${item.costPerWord}"
-                        onchange="updateDeliverable(${index}, 'costPerWord', this.value)"></td>
-                    <td class="text-right">${(item.count * item.wordsPerItem).toLocaleString()}</td>
-                    <td class="text-right">₹${(item.count * item.wordsPerItem * item.costPerWord).toLocaleString(undefined, {
+                    <td><input type="number" value="${item.costPerDesign}"
+                        onchange="updateDeliverable(${index}, 'costPerDesign', this.value)"></td>
+                    <td class="text-right">₹${(item.count * item.costPerDesign).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     })}</td>
@@ -154,3 +132,4 @@
     </script>
 </body>
 </html>
+
