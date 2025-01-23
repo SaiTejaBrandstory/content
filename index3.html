@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Deliverables Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #f9fafb;
+        }
+        .calculator-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .tabs {
+            display: flex;
+            gap: 1px;
+            background: #f0f2f5;
+            padding: 4px;
+            border-radius: 8px;
+            width: fit-content;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .tab.active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            transition: border-color 0.2s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #94a3b8;
+        }
+        .text-right {
+            text-align: right;
+        }
+        tfoot {
+            font-weight: 600;
+            background-color: #f8fafc;
+        }
+        .disabled-input {
+            background-color: #f8fafc;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        h1 {
+            color: #0f172a;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h1>Video Deliverables Calculator (INR)</h1>
+
+        <div class="tabs">
+            <button class="tab active" onclick="toggleCostMethod('minute')" id="minuteTab">
+                Cost per Minute
+            </button>
+            <button class="tab" onclick="toggleCostMethod('day')" id="dayTab">
+                Cost per Day
+            </button>
+        </div>
+
+        <table id="calculatorTable">
+            <thead>
+                <tr>
+                    <th>Deliverable Type</th>
+                    <th>Quantity</th>
+                    <th class="minute-based">Length (Mins)</th>
+                    <th class="minute-based">Cost per Min (₹)</th>
+                    <th class="day-based">Cost per Day (₹)</th>
+                    <th>Total Units (Mins)</th>
+                    <th>Total Cost (₹)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Rows will be added here by JavaScript -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="text-right" colspan="5">Summary:</td>
+                    <td class="text-right"><span id="totalUnits">0</span> mins</td>
+                    <td class="text-right">₹<span id="totalCost">0.00</span></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        const deliverables = [
+            { type: 'Short Videos', qty: 5, length: 3, costPerMin: 5000, costPerDay: 20000 },
+            { type: 'Industry Webinars', qty: 2, length: 60, costPerMin: 4000, costPerDay: 40000 },
+            { type: 'Podcasts', qty: 3, length: 30, costPerMin: 3000, costPerDay: 25000 },
+            { type: 'Training Videos', qty: 4, length: 20, costPerMin: 6000, costPerDay: 30000 },
+            { type: 'Solution Videos', qty: 2, length: 5, costPerMin: 8000, costPerDay: 15000 },
+            { type: 'Animation Videos', qty: 3, length: 2, costPerMin: 10000, costPerDay: 20000 },
+            { type: 'Employer Branding Videos', qty: 2, length: 10, costPerMin: 7500, costPerDay: 35000 }
+        ];
+
+        let currentCostMethod = 'minute';
+
+        function toggleCostMethod(method) {
+            currentCostMethod = method;
+
+            // Update tab styles
+            document.getElementById('minuteTab').classList.toggle('active', method === 'minute');
+            document.getElementById('dayTab').classList.toggle('active', method === 'day');
+
+            const minuteInputs = document.querySelectorAll('.minute-based input');
+            const dayInputs = document.querySelectorAll('.day-based input');
+
+            if (method === 'minute') {
+                minuteInputs.forEach(input => {
+                    input.disabled = false;
+                    input.classList.remove('disabled-input');
+                });
+                dayInputs.forEach(input => {
+                    input.disabled = true;
+                    input.classList.add('disabled-input');
+                });
+            } else {
+                minuteInputs.forEach(input => {
+                    input.disabled = true;
+                    input.classList.add('disabled-input');
+                });
+                dayInputs.forEach(input => {
+                    input.disabled = false;
+                    input.classList.remove('disabled-input');
+                });
+            }
+
+            deliverables.forEach((_, index) => updateRow(index));
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalUnits = 0;
+            let totalCost = 0;
+
+            deliverables.forEach(item => {
+                totalUnits += item.qty * item.length;
+                if (currentCostMethod === 'minute') {
+                    totalCost += item.qty * item.length * item.costPerMin;
+                } else {
+                    totalCost += item.qty * item.costPerDay;
+                }
+            });
+
+            document.getElementById('totalUnits').textContent = totalUnits.toLocaleString();
+            document.getElementById('totalCost').textContent = totalCost.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function updateDeliverable(index, field, value) {
+            deliverables[index][field] = Number(value);
+            updateRow(index);
+            calculateTotals();
+        }
+
+        function updateRow(index) {
+            const item = deliverables[index];
+            const totalUnits = item.qty * item.length;
+            const totalCost = currentCostMethod === 'minute'
+                ? totalUnits * item.costPerMin
+                : item.qty * item.costPerDay;
+
+            const row = document.getElementById(`row-${index}`);
+            const cells = row.getElementsByTagName('td');
+            cells[5].textContent = totalUnits.toLocaleString();
+            cells[6].textContent = '₹' + totalCost.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function createTable() {
+            const tbody = document.getElementById('tableBody');
+            deliverables.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.id = `row-${index}`;
+
+                row.innerHTML = `
+                    <td>${item.type}</td>
+                    <td><input type="number" value="${item.qty}"
+                        onchange="updateDeliverable(${index}, 'qty', this.value)"></td>
+                    <td class="minute-based"><input type="number" value="${item.length}"
+                        onchange="updateDeliverable(${index}, 'length', this.value)"></td>
+                    <td class="minute-based"><input type="number" value="${item.costPerMin}"
+                        onchange="updateDeliverable(${index}, 'costPerMin', this.value)"></td>
+                    <td class="day-based"><input type="number" value="${item.costPerDay}" disabled
+                        class="disabled-input"
+                        onchange="updateDeliverable(${index}, 'costPerDay', this.value)"></td>
+                    <td class="text-right">${(item.qty * item.length).toLocaleString()}</td>
+                    <td class="text-right">₹${(item.qty * item.length * item.costPerMin).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialize the table
+        createTable();
+        calculateTotals();
+    </script>
+</body>
+</html>
+
